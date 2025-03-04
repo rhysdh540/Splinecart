@@ -1,0 +1,32 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+issueTrackerURL = "https://github.com/rhysdh540/splinecart/issues"
+license = "MIT"
+
+[[mods]]
+modId = "splinecart"
+version = "${version}"
+displayName = "Splinecart"
+authors = "FoundationGames, rdh"
+description = "Minecart tracks that curve"
+#logoFile = "icon.png"
+
+[[dependencies.splinecart]]
+modId = "neoforge"
+mandatory = true
+versionRange = "[${neoforge_version},)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.splinecart]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[${minecraft_version}]"
+ordering = "AFTER"
+side = "BOTH"
+
+[[mixins]]
+config="splinecart.mixins.json"
+
+[[mixins]]
+config="splinecart.client.mixins.json"

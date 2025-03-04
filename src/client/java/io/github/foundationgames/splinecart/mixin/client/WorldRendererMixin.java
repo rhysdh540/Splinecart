@@ -3,18 +3,18 @@ package io.github.foundationgames.splinecart.mixin.client;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import io.github.foundationgames.splinecart.SplinecartClient;
 import io.github.foundationgames.splinecart.entity.TrackFollowerEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(value = {WorldRenderer.class}, priority = 1500)
+@Mixin(value = {LevelRenderer.class}, priority = 1500)
 public class WorldRendererMixin {
-    @ModifyExpressionValue(method = "setupTerrain(Lnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/Frustum;ZZ)V",
-            require = 0, at = @At(value = "INVOKE", ordinal = 0, target = "Lnet/minecraft/client/render/ChunkRenderingDataPreparer;method_52836()Z"))
+    @ModifyExpressionValue(method = "setupRender",
+            require = 0, at = @At(value = "INVOKE", ordinal = 0, target = "Lnet/minecraft/client/renderer/SectionOcclusionGraph;consumeFrustumUpdate()Z"))
     private boolean splinecart$updateChunkOcclusionCullingWhileOnTrack(boolean old) {
         if (SplinecartClient.CFG_ROTATE_CAMERA.get()) {
-            var entity = MinecraftClient.getInstance().cameraEntity;
+            var entity = Minecraft.getInstance().cameraEntity;
             while (entity != null) {
                 entity = entity.getVehicle();
 

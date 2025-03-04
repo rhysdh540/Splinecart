@@ -1,9 +1,9 @@
 package io.github.foundationgames.splinecart.util;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -13,19 +13,19 @@ public enum SUtil {;
             float strength = (float)i / 15.0F;
             colors[i] = new Vector3f(
                     strength * 0.6f + (strength > 0.0f ? 0.4f : 0.3f),
-                    MathHelper.clamp((strength * strength * 0.7f) - 0.5f, 0, 1),
-                    MathHelper.clamp((strength * strength * 0.6f) - 0.7f, 0, 1)
+                    Mth.clamp((strength * strength * 0.7f) - 0.5f, 0, 1),
+                    Mth.clamp((strength * strength * 0.6f) - 0.7f, 0, 1)
             );
         }
     });
 
-    public static void putBlockPos(NbtCompound nbt, @Nullable BlockPos pos, String key) {
+    public static void putBlockPos(CompoundTag nbt, @Nullable BlockPos pos, String key) {
         if (pos == null) {
             nbt.putIntArray(key, new int[0]);
         } else nbt.putIntArray(key, new int[] {pos.getX(), pos.getY(), pos.getZ()});
     }
 
-    public static BlockPos getBlockPos(NbtCompound nbt, String key) {
+    public static BlockPos getBlockPos(CompoundTag nbt, String key) {
         var arr = nbt.getIntArray(key);
         if (arr.length < 3) return null;
 

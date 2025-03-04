@@ -6,10 +6,9 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.github.foundationgames.splinecart.Splinecart;
-import net.minecraft.command.CommandSource;
-
 import java.io.IOException;
 import java.util.Properties;
+import net.minecraft.commands.SharedSuggestionProvider;
 
 public abstract class ConfigOption<T> {
     protected final Config owner;
@@ -30,7 +29,7 @@ public abstract class ConfigOption<T> {
 
     protected abstract ArgumentType<T> commandArgType();
 
-    public final <S extends CommandSource> RequiredArgumentBuilder<S, ?> commandArg(String name) {
+    public final <S extends SharedSuggestionProvider> RequiredArgumentBuilder<S, ?> commandArg(String name) {
         return RequiredArgumentBuilder.argument(name, this.commandArgType());
     }
 
@@ -52,7 +51,7 @@ public abstract class ConfigOption<T> {
         }
     }
 
-    public abstract <S extends CommandSource> void setFromCommandAndSave(CommandContext<S> ctx, String argName);
+    public abstract <S extends SharedSuggestionProvider> void setFromCommandAndSave(CommandContext<S> ctx, String argName);
 
     public static class BooleanOption extends ConfigOption<Boolean> {
         public BooleanOption(String key, Boolean initialValue, Config owner) {
@@ -77,7 +76,7 @@ public abstract class ConfigOption<T> {
         }
 
         @Override
-        public <S extends CommandSource> void setFromCommandAndSave(CommandContext<S> ctx, String argName) {
+        public <S extends SharedSuggestionProvider> void setFromCommandAndSave(CommandContext<S> ctx, String argName) {
             this.setAndSave(BoolArgumentType.getBool(ctx, argName));
         }
     }
@@ -113,7 +112,7 @@ public abstract class ConfigOption<T> {
         }
 
         @Override
-        public <S extends CommandSource> void setFromCommandAndSave(CommandContext<S> ctx, String argName) {
+        public <S extends SharedSuggestionProvider> void setFromCommandAndSave(CommandContext<S> ctx, String argName) {
             this.setAndSave(IntegerArgumentType.getInteger(ctx, argName));
         }
     }

@@ -4,45 +4,55 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.foundationgames.splinecart.block.entity.TrackTiesBlockEntityRenderer;
 import io.github.foundationgames.splinecart.config.Config;
 import io.github.foundationgames.splinecart.config.ConfigOption;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
-import net.minecraft.client.render.entity.EmptyEntityRenderer;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+import net.neoforged.neoforge.common.NeoForge;
+
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.NoopRenderer;
+import net.minecraft.commands.CommandSourceStack;
 
 import java.io.IOException;
 
-public class SplinecartClient implements ClientModInitializer {
+@Mod(value = Splinecart.ID, dist = Dist.CLIENT)
+public class SplinecartClient {
 	public static final Config CONFIG = new Config("splinecart_client",
-			() -> FabricLoader.getInstance().getConfigDir()
+			() -> FMLPaths.CONFIGDIR.get()
 					.resolve("splinecart").resolve("splinecart_client.properties"));
 
 	public static final ConfigOption.BooleanOption CFG_ROTATE_CAMERA = CONFIG.optBool("rotate_camera", true);
 	public static final ConfigOption.IntOption CFG_TRACK_RESOLUTION = CONFIG.optInt("track_resolution", 3, 1, 16);
 	public static final ConfigOption.IntOption CFG_TRACK_RENDER_DISTANCE = CONFIG.optInt("track_render_distance", 8, 4, 32);
 
-	@Override
-	public void onInitializeClient() {
+
+	public SplinecartClient(IEventBus bus) {
 		try {
 			CONFIG.load();
 		} catch (IOException e) {
 			Splinecart.LOGGER.error("Error loading client config on mod init", e);
 		}
 
-		BlockRenderLayerMap.INSTANCE.putBlock(Splinecart.TRACK_TIES, RenderLayer.getCutout());
+		bus.addListener(FMLClientSetupEvent.class, event -> {
+			ItemBlockRenderTypes.setRenderLayer(Splinecart.TRACK_TIES.get(), RenderType.cutout());
+		});
 
-		BlockEntityRendererFactories.register(Splinecart.TRACK_TIES_BE, TrackTiesBlockEntityRenderer::new);
-		EntityRendererRegistry.register(Splinecart.TRACK_FOLLOWER, EmptyEntityRenderer::new);
+		bus.addListener(EntityRenderersEvent.RegisterRenderers.class, event -> {
+			event.registerBlockEntityRenderer(Splinecart.TRACK_TIES_BE.get(), TrackTiesBlockEntityRenderer::new);
+			event.registerEntityRenderer(Splinecart.TRACK_FOLLOWER.get(), NoopRenderer::new);
+		});
 
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
-				dispatcher.register(
-					LiteralArgumentBuilder.<FabricClientCommandSource>literal("splinecartc")
-							.then(CONFIG.command(LiteralArgumentBuilder.literal("config"),
-									FabricClientCommandSource::sendFeedback))
-		));
+		NeoForge.EVENT_BUS.addListener(RegisterClientCommandsEvent.class, event -> {
+			event.getDispatcher().register(
+				LiteralArgumentBuilder.<CommandSourceStack>literal("splinecartc")
+						.then(CONFIG.command(LiteralArgumentBuilder.literal("config"),
+								CommandSourceStack::sendSystemMessage))
+			);
+		});
 	}
 }
