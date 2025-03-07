@@ -66,6 +66,8 @@ tasks.jar {
     from("LICENSE") {
         into("META-INF")
     }
+
+    from(sourceSets.client.output)
 }
 
 // accessors
